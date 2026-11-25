@@ -1,101 +1,76 @@
+﻿const path = require("path");
 const express = require("express");
-const db = require("./config/db");
-const bcrypt = require("bcrypt");
+const dotenv = require("dotenv");
+
+dotenv.config({ path: path.resolve(__dirname, ".env") });
+
+const { verifyConnection } = require("./config/db");
+const labRoutes = require("./routes/labRoutes");
 
 const app = express();
+const PORT = Number(process.env.PORT || 5000);
 
-app.use(express.json());
+app.use(express.json({ limit: "16kb" }));
+app.use(express.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, "public")));
 
-app.post("/login-vulnerable", async (req, res) => {
-    try {
-        const { username, password } = req.body;
-
-        // Intentionally vulnerable: local lab only
-        const query = `
-            SELECT id, username, role
-            FROM users
-            WHERE username = '${username}'
-            AND password = '${password}'
-        `;
-
-        const [rows] = await db.query(query);
-
-        if (rows.length === 0) {
-            return res.status(401).json({
-                message: "Invalid credentials"
-            });
-        }
-
-        res.json({
-            message: "Login successful",
-            user: rows[0]
-        });
-
-    } catch (error) {
-        console.error(error.message);
-
-        res.status(500).json({
-            message: "Database error"
-        });
-    }
+app.get("/api/health", async (_req, res) => {
+  try {
+    await verifyConnection();
+    res.json({
+      status: "ok",
+      database: "connected",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    res.status(503).json({
+      status: "degraded",
+      database: "disconnected",
+      message: error.message,
+    });
+  }
 });
 
+app.use("/api", labRoutes);
 
-app.post("/login-secure-no-bind", async (req,res) => {
-    try{
-        const query = "SELECT id, username, role FROM users WHERE username = 'haritha' AND password = 'user123'";
-        const [rows] = await db.query(query);
-        if(rows.length === 0){
-            return res.status(401).json({
-                message: "Invalid credentials"
-            });
-        }
-        res.json({
-            message: "Login successful",
-            user: rows[0]
-        });
-
-    }catch(error){
-        console.error(error.message);
-        res.status(500).json({
-            message: "Database error"
-        });
-    }
-})
-
-app.post("/login-secure-with-bind", async (req, res) => {
-    try {
-        const { username, password } = req.body;
-
-        const query = "SELECT id, username, role FROM users WHERE username = ? AND password = ?";
-        const [rows] = await db.execute(query, [username]);
-
-        if (rows.length === 0) {
-            return res.status(401).json({
-                message: "Invalid credentials"
-            });
-        }
-        
-        const passwordMatched = await bcrypt.compare(password, rows[0].password);
-        if (!passwordMatched) {
-            return res.status(401).json({
-                message: "Invalid credentials"
-            });
-        }
-
-        res.json({
-            message: "Login successful",
-            user: rows[0]
-        });
-
-    } catch (error) {
-        console.error(error.message);
-        res.status(500).json({
-            message: "Database error"
-        });
-    }
+// Legacy endpoints kept for compatibility with the original lab.
+app.post("/login-vulnerable", (req, res, next) => {
+  req.url = "/labs/auth-bypass/vulnerable";
+  labRoutes(req, res, next);
 });
 
-app.listen(process.env.PORT || 5000, () => {
-    console.log("Server running on port 5000");
+app.post("/login-secure", (req, res, next) => {
+  req.url = "/labs/auth-bypass/secure";
+  labRoutes(req, res, next);
 });
+
+app.use("/api", (_req, res) => {
+  res.status(404).json({ message: "API route not found." });
+});
+
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.use((error, _req, res, _next) => {
+  console.error("[server] Unhandled error:", error);
+  res.status(500).json({ message: "Internal server error." });
+});
+
+async function startServer() {
+  try {
+    await verifyConnection();
+    console.log("[db] Connection verified.");
+  } catch (error) {
+    console.warn(
+      "[db] Could not connect at startup. The API will start, but database-backed labs will fail until MySQL is configured."
+    );
+    console.warn(`[db] ${error.message}`);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`[server] SQLi Lab running at http://localhost:${PORT}`);
+  });
+}
+
+startServer();

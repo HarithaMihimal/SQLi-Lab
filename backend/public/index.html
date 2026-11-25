@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SQLi Lab | Learn SQL Injection Safely</title>
+    <meta
+      name="description"
+      content="An educational SQL injection lab demonstrating vulnerable patterns and secure defenses."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <p class="eyebrow">Educational Security Lab</p>
+        <h1>SQL Injection Lab</h1>
+        <p class="hero-copy">
+          Explore how SQL injection works, run safe local demos, and compare vulnerable
+          code paths with secure implementations.
+        </p>
+        <div class="hero-badges">
+          <span class="badge">Local Demo Only</span>
+          <span class="badge">Vulnerable vs Secure</span>
+          <span class="badge">OWASP Top 10</span>
+        </div>
+      </header>
+
+      <main class="layout">
+        <aside class="panel labs-panel">
+          <div class="panel-header">
+            <h2>Labs</h2>
+            <p>Select a scenario to test.</p>
+          </div>
+          <div id="labList" class="lab-list" aria-live="polite"></div>
+
+          <div class="panel-note">
+            <h3>Demo accounts</h3>
+            <ul>
+              <li><code>admin / admin123</code></li>
+              <li><code>alice / password123</code></li>
+              <li><code>bob / letmein</code></li>
+            </ul>
+          </div>
+        </aside>
+
+        <section class="panel workspace-panel">
+          <div class="workspace-header">
+            <div>
+              <p id="labTag" class="eyebrow">Lab</p>
+              <h2 id="labTitle">Loading...</h2>
+              <p id="labSummary" class="muted"></p>
+            </div>
+            <div class="mode-toggle" role="group" aria-label="Mode">
+              <button class="mode-btn active" data-mode="vulnerable" type="button">
+                Vulnerable
+              </button>
+              <button class="mode-btn" data-mode="secure" type="button">Secure</button>
+            </div>
+          </div>
+
+          <div class="workspace-grid">
+            <div class="card">
+              <div class="card-header">
+                <h3>Try It</h3>
+                <p id="endpointLabel" class="endpoint"></p>
+              </div>
+              <form id="labForm" class="lab-form"></form>
+              <div class="form-actions">
+                <button id="runBtn" class="primary-btn" type="submit" form="labForm">
+                  Run Request
+                </button>
+                <button id="payloadBtn" class="secondary-btn" type="button">
+                  Use Sample Payload
+                </button>
+              </div>
+              <p id="payloadHint" class="hint"></p>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>Learning Notes</h3>
+              </div>
+              <div id="learningNotes" class="notes"></div>
+            </div>
+          </div>
+
+          <div class="workspace-grid results-grid">
+            <div class="card">
+              <div class="card-header">
+                <h3>Request / Query</h3>
+              </div>
+              <pre id="queryOutput" class="code-block">Select a lab and run a request.</pre>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>Response</h3>
+              </div>
+              <pre id="responseOutput" class="code-block">Response data will appear here.</pre>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p>
+          Built for classroom demonstrations. Do not deploy vulnerable endpoints to public
+          environments.
+        </p>
+      </footer>
+    </div>
+    <script src="./app.js"></script>
+  </body>
+</html>
